@@ -1,6 +1,7 @@
 import express from "express";
 import { login, register } from "../controllers/auth.controller.js";
 import { body } from "express-validator";
+import { validationResultExpress } from "../middlewares/validationResultExpress.js";
 const router = express.Router();
 
 router.post(
@@ -19,10 +20,23 @@ router.post(
                 return value;
             }
         ), 
-    ],     
+    ],
+    validationResultExpress,   
     register  
                                                                      //ese mail tiene que pasar ciertas validaciones, por ejemplo que sea una email en caso de que no sea deberia fallar (salta em mensaje)
 );
-router.post("/login", login);
+
+router.post(
+    "/login",
+    [
+        body("email", "Formato de email incorrecto")
+            .trim()
+            .isEmail()
+            .normalizeEmail(),
+        body("password", "Minimo 6 caracteres").trim().isLength({ min: 6})
+    ],
+    validationResultExpress,
+    login
+);
 
 export default router;
